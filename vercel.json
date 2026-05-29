@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/api/turn", "destination": "/api/turn" }
+  ]
+}
