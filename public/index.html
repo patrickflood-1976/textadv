@@ -642,7 +642,13 @@ async function sendToAI(playerAction) {
 
     // Parse actions
     const actionMatch = fullText.match(/ACTIONS:\[(.+?)\]/);
-    let narrative = fullText.replace(/ACTIONS:\[.+?\]/, '').replace(/PRESENT:\[.+?\]/, '').trim();
+let narrative = fullText
+  .replace(/ACTIONS:\[.+?\]/s, '')
+  .replace(/PRESENT:\[.+?\]/s, '')
+  .replace(/#{1,6}\s/g, '')
+  .replace(/\*\*(.+?)\*\*/g, '$1')
+  .replace(/\*(.+?)\*/g, '$1')
+  .trim();
     let actions = [];
     if (actionMatch) {
       try { actions = JSON.parse('[' + actionMatch[1] + ']'); } catch(e) {}
