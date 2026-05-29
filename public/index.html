@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adventure Game</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: Georgia, serif;
+    background: #0a0a0a;
+    color: #e8e0d0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* TITLE SCREEN */
+  #title-screen {
+    position: fixed;
+    inset: 0;
+    background: #0a0a0a;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    gap: 16px;
+  }
+
+  #title-screen h1 {
+    font-size: 2.8rem;
+    color: #e8c84a;
+    letter-spacing: 0.08em;
+    text-shadow: 0 0 40px rgba(232,200,74,0.4);
+  }
+
+  #title-screen p {
+    color: #888;
+    font-style: italic;
+    font-size: 1rem;
+  }
+
+  .world-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    max-width: 900px;
+    width: 90%;
+    margin-top: 16px;
+  }
+
+  .world-card {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 20px 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+
+  .world-card:hover {
+    border-color: #e8c84a;
+    background: #1f1f1f;
+    transform: translateY(-2px);
+  }
+
+  .world-card .world-emoji { font-size: 2rem; margin-bottom: 8px; }
+  .world-card .world-name { font-size: 1rem; font-weight: bold; color: #e8e0d0; margin-bottom: 4px; }
+  .world-card .world-desc { font-size: 0.8rem; color: #888; font-style: italic; }
+
+  /* SCENE IMAGE */
+  #scene-image {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    object-position: center;
+    flex-shrink: 0;
+    filter: brightness(0.75);
+  }
+
+  /* GAME SCREEN */
+  #game-screen {
+    display: none;
+    flex-direction: column;
+    height: 100vh;
+  }
+
+  /* HEADER */
+  #game-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    background: #111;
+    border-bottom: 1px solid #222;
+    flex-shrink: 0;
+  }
+
+  #world-title {
+    font-size: 0.85rem;
+    color: #e8c84a;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  #back-btn {
+    background: none;
+    border: 1px solid #333;
+    color: #888;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.75rem;
+  }
+
+  #back-btn:hover { border-color: #666; color: #aaa; }
+
+  /* STORY FEED */
+  #story-feed {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    scroll-behavior: smooth;
+  }
+
+  .story-entry { line-height: 1.7; }
+
+  .narrator-text {
+    color: #e8e0d0;
+    font-size: 0.95rem;
+  }
+
+  .player-text {
+    color: #e8c84a;
+    font-style: italic;
+    font-size: 0.9rem;
+    padding-left: 12px;
+    border-left: 2px solid #e8c84a44;
+  }
+
+  .typing-indicator {
+    color: #555;
+    font-style: italic;
+    font-size: 0.85rem;
+  }
+
+  /* ACTION BUTTONS */
+  #action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 16px;
+    background: #111;
+    border-top: 1px solid #1e1e1e;
+    flex-shrink: 0;
+  }
+
+  .action-btn {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    color: #e8e0d0;
+    padding: 8px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-family: Georgia, serif;
+    transition: all 0.15s;
+    flex: 1;
+    min-width: 140px;
+    text-align: center;
+  }
+
+  .action-btn:hover {
+    background: #252525;
+    border-color: #e8c84a;
+    color: #e8c84a;
+  }
+
+  /* INPUT AREA */
+  #input-area {
+    display: flex;
+    gap: 8px;
+    padding: 10px 16px;
+    background: #0f0f0f;
+    border-top: 1px solid #1a1a1a;
+    flex-shrink: 0;
+    align-items: center;
+  }
+
+  #player-input {
+    flex: 1;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    color: #e8e0d0;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-family: Georgia, serif;
+    font-size: 0.9rem;
+    outline: none;
+    resize: none;
+    height: 42px;
+  }
+
+  #player-input:focus { border-color: #555; }
+
+  #player-input::placeholder { color: #444; }
+
+  .input-btn {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    color: #888;
+    width: 42px;
+    height: 42px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .input-btn:hover { border-color: #e8c84a; color: #e8c84a; }
+  .input-btn.active { border-color: #e84a4a; color: #e84a4a; background: #1f1515; }
+
+  #send-btn {
+    background: #e8c84a;
+    border: none;
+    color: #0a0a0a;
+    width: 42px;
+    height: 42px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+
+  #send-btn:hover { background: #f0d060; }
+  #send-btn:disabled { background: #333; color: #666; cursor: not-allowed; }
+
+  /* SCROLLBAR */
+  #story-feed::-webkit-scrollbar { width: 4px; }
+  #story-feed::-webkit-scrollbar-track { background: transparent; }
+  #story-feed::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- TITLE SCREEN -->
+<div id="title-screen">
+  <h1>⚔ Adventure Game</h1>
+  <p>Choose your world</p>
+  <div class="world-grid">
+    <div class="world-card" onclick="startWorld('west')">
+      <div class="world-emoji">🤠</div>
+      <div class="world-name">Saddle Creek</div>
+      <div class="world-desc">American Old West</div>
+    </div>
+    <div class="world-card" onclick="startWorld('noir')">
+      <div class="world-emoji">🕵️</div>
+      <div class="world-name">The Smoking Typewriter</div>
+      <div class="world-desc">New York City, 1928</div>
+    </div>
+    <div class="world-card" onclick="startWorld('medieval')">
+      <div class="world-emoji">🏰</div>
+      <div class="world-name">Caernarfon</div>
+      <div class="world-desc">Medieval England, 1314</div>
+    </div>
+    <div class="world-card" onclick="startWorld('rome')">
+      <div class="world-emoji">🏛️</div>
+      <div class="world-name">Roma Aeterna</div>
+      <div class="world-desc">Rome, 44 BC</div>
+    </div>
+    <div class="world-card" onclick="startWorld('roadtrip')">
+      <div class="world-emoji">🚐</div>
+      <div class="world-name">The Bomb Pop</div>
+      <div class="world-desc">1985 Road Trip</div>
+    </div>
+  </div>
+</div>
+
+<!-- GAME SCREEN -->
+<div id="game-screen">
+  <div id="game-header">
+    <span id="world-title">Adventure Game</span>
+    <button id="back-btn" onclick="goBack()">← Worlds</button>
+  </div>
+  <img id="scene-image" src="" alt="Scene">
+  <div id="story-feed"></div>
+  <div id="action-buttons"></div>
+  <div id="input-area">
+    <textarea id="player-input" placeholder="What do you do..." rows="1"></textarea>
+    <button class="input-btn" id="voice-btn" title="Voice input">🎤</button>
+    <button id="send-btn" onclick="sendAction()">➤</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// WORLD DEFINITIONS
+// ═══════════════════════════════════════════
+const WORLDS = {
+  west: {
+    name: "Saddle Creek",
+    title: "🤠 SADDLE CREEK — OLD WEST",
+    image: "images/west.jpg",
+    system: `You are the narrator of a gritty, dangerous Old West adventure set in Saddle Creek — a lawless frontier town corrupted by Frank Harlow and his gang who operate out of The Smoking Gun saloon.
+
+TONE: Gritty, tense, dangerous. Think Unforgiven and Pale Rider. Dark humor at the edges only — never slapstick. The world takes itself seriously even when the player doesn't.
+
+THE PLAYER: A nameless drifter. Dangerous, capable, no allegiances. They arrived, a farmer died in the street pressing a deed into their hand with his last breath — a deed to land Frank Harlow wants. The farmer's daughter is Kittie. The player made a silent promise in the dust.
+
+KEY CHARACTERS:
+- Frank Harlow: Saloon King. Always performing, always smoking a cigar, pours your drink before you ask. Utterly ruthless underneath the warmth. The smile never wavers — that's the tell.
+- Chauncey: Frank's enforcer. Nose broken so many times it points left. Carries no gun. Doesn't need one. Never speaks unnecessarily.
+- Jasper Poe: Slimy mid-level gang member. Talks constantly, always has an explanation, betrayal is just business. Currently hiding under Frank's protection.
+- Cobb: Old timer, town founder, let Frank in and has regretted it every day since. Knows where all the bodies are buried.
+- Ace Durbin: Traveling gambler hunting Jasper Poe who betrayed him to the law. Not the player's ally exactly — just someone whose enemies overlap for now.
+- Kittie: The farmer's daughter. The deed is to her land. The reason the player stayed.
+
+GAMEPLAY RULES:
+- Respond in vivid second-person present tense ("You push through the saloon doors...")
+- Keep responses to 3-5 sentences of pure narrative — atmospheric and specific
+- After EVERY response, suggest exactly 4 possible actions as a JSON array at the very end
+- Format the actions EXACTLY like this with no text after: ACTIONS:["action 1","action 2","action 3","action 4"]
+- Actions should feel genuine and varied — not all safe choices
+- The world reacts authentically to bold, rude, or unexpected player choices
+- Characters remember what the player has done
+- Bold action is rewarded — this is a world that respects capability`,
+  },
+
+  noir: {
+    name: "The Smoking Typewriter",
+    title: "🕵️ THE SMOKING TYPEWRITER — NYC 1928",
+    image: "images/noir.jpg",
+    system: `You are the narrator of a hard-boiled noir detective story set in New York City, 1928 — Prohibition, Tammany Hall, jazz, and corruption at every level.
+
+TONE: Atmospheric, moody, hard-boiled. Absurdist comedy is welcome — the narrator describes even ridiculous player choices in deadly serious prose. That gap is where the comedy lives.
+
+THE PLAYER: Jack Malone, private detective. Office above a pawn shop in Midtown, two doors from Tommy Byrne's Irish pub. Fell into detective work helping a friend's trucking business navigate dock trouble. Knows the waterfront. Few beers, occasional jazz cigarette, genuine weakness for women that always complicates things. Skeptical of cops — not against them, just clear-eyed about corruption.
+
+THE CASE: Nora Sullivan walked into Jack's office looking for her missing half-brother Calvin — a jazz saxophone player who can play anything he hears perfectly from memory. Calvin was playing at The Alabaster (upscale Harlem jazz club) when he overheard a meeting between Thomas Galloway (Tammany fixer, dresses like a banker) and Sal Benedetto (runs the longshoremen's union). Now Calvin is missing. He's either hidden or silenced. Finding out which is the whole job.
+
+KEY CHARACTERS:
+- Nora Sullivan: Calvin's half-sister. Knows more than she's told Jack. Not manipulative — just protecting someone, deciding if she can trust him. Jack finds her completely compelling. This will complicate things.
+- Tommy Byrne: Barman two doors down. Happy to be in America, heart still in Ireland. Speaks with Irish brogue and hilarious colloquialisms ("pure notions", "gobdaw", "dragged through a ditch backwards") delivered completely straight.
+- Thomas Galloway: Tammany fixer. Dresses like a banker — Jack hates bankers. Never raises his voice. Twenty years solving powerful men's problems. Quietly without hesitation.
+- Sal Benedetto: Old country manners, expensive suit, runs the longshoremen's union in practice. Has been skimming every dock for fifteen years with Tammany's blessing.
+- Calvin Sullivan: Missing. A genuine jazz voice. Jack knows him personally — shared late nights and jazz cigarettes in Harlem clubs.
+
+GAMEPLAY RULES:
+- Narrate in hard-boiled second person ("The rain hits the window like it has a personal grudge...")
+- Jack's inner voice is wry, observational, occasionally self-deprecating
+- Tommy's dialogue must include at least one Irish colloquialism per appearance
+- Keep responses to 3-5 sentences — atmospheric and specific
+- After EVERY response, suggest exactly 4 possible actions as a JSON array
+- Format EXACTLY: ACTIONS:["action 1","action 2","action 3","action 4"]
+- Absurd player choices get narrated with complete deadpan seriousness`,
+  },
+
+  medieval: {
+    name: "Caernarfon",
+    title: "🏰 CAERNARFON — MEDIEVAL ENGLAND 1314",
+    image: "images/medieval.jpg",
+    system: `You are the narrator of a grounded, historically authentic medieval adventure set in Caernarfon Castle, Wales, 1314 — during the crumbling reign of Edward II.
+
+TONE: Politically complex, consequence-heavy, morally ambiguous. No magic, no supernatural elements. Grounded realism throughout. Comedy emerges from bold player choices colliding with rigid medieval social structure — never from the narrator winking.
+
+HISTORICAL CONTEXT: Edward II's reign is crumbling. The catastrophic defeat at Bannockburn in 1314 has destroyed English military prestige. The Lords Ordainer (powerful barons) have seized control of royal appointments. The Earl of Pembroke leads a genuine reform movement — his cause has merit even if his methods are illegal.
+
+THE PLAYER: Sir Edmund Cavell, knight of middling rank, in service to the castle constable. High enough to stand in great halls, not so high every move is recorded. Owes Sir Walter Breck a profound debt — Sir Walter cleared his name from a serious accusation that would have ended everything.
+
+KEY CHARACTERS:
+- Sir Walter Breck: Castle constable. Organized, fair, not cruel. Secretly serves the Earl of Pembroke — building a shadow administration of loyal constables across Wales. The first crack: a messenger who arrives at odd hours, never logged.
+- Owain Glyndŵr: Welsh fighter. Ancestor of the future Welsh hero. Moves between castle and hills. Doesn't perform, doesn't explain himself. Speaks when he has something worth saying. Decided Sir Edmund was worth something after witnessing a small act of decency.
+- Lady Maud Corbet: Travels as a healer of genuine renown. Pembroke's enforcer. Lost her son at Bannockburn. Believes completely. Reads people instantly. No hesitation. Already three steps ahead. Sir Edmund's honest reaction: wariness and respect in equal measure.
+
+GAMEPLAY RULES:
+- Narrate in grounded, specific second person — the physical world is real and present
+- Characters address Sir Edmund formally — "Sir Edmund" — unless relationship warrants otherwise
+- Owain speaks plainly, no flowery language, occasional Welsh word
+- Lady Maud is always slightly ahead of the conversation
+- Keep responses to 3-5 sentences
+- After EVERY response, suggest exactly 4 possible actions as a JSON array
+- Format EXACTLY: ACTIONS:["action 1","action 2","action 3","action 4"]
+- Medieval social hierarchy matters — actions that violate it have real consequences`,
+  },
+
+  rome: {
+    name: "Roma Aeterna",
+    title: "🏛️ ROMA AETERNA — ROME 44 BC",
+    image: "images/rome.jpg",
+    system: `You are the narrator of a tense historical thriller set in Rome, 44 BC. The Ides of March is approaching. Caesar will be assassinated on March 15th unless the player intervenes.
+
+TONE: Tense, conspiratorial, paranoid. The dramatic irony is the engine — the player knows what's coming, the characters don't. Every scene carries that weight. Authentic Roman atmosphere — the Forum, household visits, Senate politics, street life.
+
+THE PLAYER: Marcus Varro, physician. Treated Caesar's epilepsy in complete secrecy — a private debt from the most powerful man in Rome. Carries knowledge no Roman can share: he knows the aftermath. The civil wars, Octavian, the destruction of the Republic these conspirators claim to be defending. His motivation: a physician's hatred of preventable mass suffering — he has held civil war's casualties in his hands. Not a warrior, but capable with a blade from years of field medicine.
+
+THE KEY CHALLENGE: Marcus cannot say "I know the future." He must work within what 44 BC Rome can understand. He is the only man who can see the whole board and has almost no ability to use that knowledge directly.
+
+KEY CHARACTERS:
+- Julius Caesar: Brilliant, proud, fatalistic. May know people want him dead and consider fear beneath him. Trusts Marcus with his medical secret — that trust is the key to access.
+- Mark Antony: Caesar's closest ally. Raw, suspicious, fiercely loyal. Has been lied to by educated men his whole career. Getting his trust means earning it through honesty and action — not words. The mission shape: get Antony into that room on the Ides.
+- Brutus: Genuine Republican idealist. Conflicted, principled, wrong. The most interesting relationship — almost possible to reach.
+- Cassius: Driven by grievance and ambition. The engine of the conspiracy. Harder and more dangerous than Brutus.
+- Decimus Brutus: Caesar's trusted friend. Also a conspirator. The wolf inside the door.
+- Calpurnia: Caesar's wife. Already afraid. Needs confirmation not convincing.
+
+GAMEPLAY RULES:
+- Narrate in vivid present tense — Rome is alive, loud, specific
+- Latin phrases used sparingly and authentically (ave, dominus, the Forum, the Senate)
+- Keep responses to 3-5 sentences — atmosphere and tension
+- After EVERY response, suggest exactly 4 possible actions as a JSON array
+- Format EXACTLY: ACTIONS:["action 1","action 2","action 3","action 4"]
+- Historical authenticity matters — Roman social customs, the client system, household culture
+- The countdown to the Ides should feel present in every scene`,
+  },
+
+  roadtrip: {
+    name: "The Bomb Pop",
+    title: "🚐 THE BOMB POP — 1985 ROAD TRIP",
+    image: "images/roadtrip.jpg",
+    system: `You are the narrator of a pure comedy road trip adventure set in 1985. Think Dumb and Dumber meets Tommy Boy meets National Lampoon's Vacation.
+
+TONE: Pure comedy chaos. Low stakes that feel high. The buddy dynamic IS the story. Hilarity is mandatory. The 1985 setting creates obstacles organically — no GPS, no cell phones, paper maps, motels with broken TVs, diners with suspicious pie.
+
+THE SETUP: You and your college roommate Donnie are driving from Maryland to Orlando for your mutual friend's wedding. You missed your flight. You are driving Donnie's cousin's decommissioned ice cream van — The Bomb Pop — which still has half-removed Bomb Pop decals on the side. One cassette tape: The Doors Greatest Hits. Donnie is in the wedding party and must arrive no matter what. The rehearsal dinner is already being missed. The groom is calling every payphone on I-95 in increasing desperation.
+
+DONNIE — FULL CHARACTER PROFILE (critical):
+- Gets distracted by literally anything shiny, interesting, or edible
+- Makes friends with completely the wrong people instantly — and invites them along
+- Thinks his instincts are solid. They are consistently, objectively terrible.
+- Complete unshakeable confidence. Never second-guesses. Always has an explanation for the disaster.
+- Classic post-disaster Donnie: "I still think that went pretty well until the very end."
+- Loves The Doors with genuine passion — Jim Morrison is his personal philosopher
+- Will recite Morrison poetry at completely inappropriate moments with total sincerity
+- College roommates — chosen each other freshman year, survived four years, you've seen each other at your worst
+- Secretly soulful. The music proves it even when nothing else does.
+
+THE BOMB POP:
+- Decommissioned ice cream van, half-removed Bomb Pop decals still visible
+- Donnie named it with complete pride before anyone could object
+- At least once during the trip a kid will run toward it with money
+- The Doors Greatest Hits is the only cassette. It will be played on repeat.
+
+WAYPOINTS: Somewhere in North Carolina → Savannah Georgia → Florida Panhandle → Orlando
+
+GAMEPLAY RULES:
+- Narrate in second person — "You" is the straight man, Donnie is always present and always a factor
+- Donnie should speak frequently with complete confidence in whatever terrible idea he has
+- The groom's increasingly desperate payphone calls should punctuate the journey
+- Keep responses to 3-5 sentences plus Donnie dialogue
+- After EVERY response, suggest exactly 4 possible actions as a JSON array
+- Format EXACTLY: ACTIONS:["action 1","action 2","action 3","action 4"]
+- Bold, rude, or absurd player choices are enthusiastically encouraged
+- Donnie will support every bad idea the player has and make it worse`,
+  }
+};
+
+// ═══════════════════════════════════════════
+// GAME STATE
+// ═══════════════════════════════════════════
+let currentWorld = null;
+let messageHistory = [];
+let isWaiting = false;
+let recognition = null;
+let isListening = false;
+
+function saveState() {
+  if (!currentWorld) return;
+  localStorage.setItem('ag_world', JSON.stringify({
+    key: Object.keys(WORLDS).find(k => WORLDS[k] === currentWorld),
+    history: messageHistory
+  }));
+}
+
+function loadState() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('ag_world'));
+    if (!saved || !saved.key || !saved.history.length) return false;
+    currentWorld = WORLDS[saved.key];
+    messageHistory = saved.history;
+    return saved;
+  } catch(e) {
+    return false;
+  }
+}
+
+function clearState() {
+  localStorage.removeItem('ag_world');
+}
+
+// ═══════════════════════════════════════════
+// WORLD SELECTION
+// ═══════════════════════════════════════════
+async function startWorld(worldKey) {
+  currentWorld = WORLDS[worldKey];
+  messageHistory = [];
+
+  document.getElementById('title-screen').style.display = 'none';
+  document.getElementById('game-screen').style.display = 'flex';
+  document.getElementById('world-title').textContent = currentWorld.title;
+  document.getElementById('story-feed').innerHTML = '';
+  document.getElementById('action-buttons').innerHTML = '';
+
+  // Set scene image
+  const img = document.getElementById('scene-image');
+  img.src = currentWorld.image;
+  img.onerror = () => img.style.display = 'none';
+
+  // Opening turn
+  await sendToAI("Begin the adventure. Set the scene vividly and immediately. Drop me right into the action.");
+}
+
+function goBack() {
+  document.getElementById('game-screen').style.display = 'none';
+  document.getElementById('title-screen').style.display = 'flex';
+  stopVoice();
+  clearState();
+}
+
+// ═══════════════════════════════════════════
+// SEND ACTION
+// ═══════════════════════════════════════════
+async function sendAction(actionText) {
+  if (isWaiting) return;
+  const input = document.getElementById('player-input');
+  const text = actionText || input.value.trim();
+  if (!text) return;
+
+  input.value = '';
+  document.getElementById('action-buttons').innerHTML = '';
+
+  addToFeed(text, 'player');
+  await sendToAI(text);
+}
+
+// ═══════════════════════════════════════════
+// AI COMMUNICATION
+// ═══════════════════════════════════════════
+async function sendToAI(playerAction) {
+  isWaiting = true;
+  document.getElementById('send-btn').disabled = true;
+
+  messageHistory.push({ role: 'user', content: playerAction });
+
+  const typingEl = addToFeed('...', 'typing');
+
+  try {
+    const response = await fetch('/api/turn', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        systemPrompt: currentWorld.system,
+        messages: messageHistory
+      })
+    });
+
+    const data = await response.json();
+    const fullText = data.content[0].text;
+
+    // Split narrative from actions
+    const actionMatch = fullText.match(/ACTIONS:\[(.+)\]/);
+    let narrative = fullText.replace(/ACTIONS:\[.+\]/, '').trim();
+    let actions = [];
+
+    if (actionMatch) {
+      try {
+        actions = JSON.parse('[' + actionMatch[1] + ']');
+      } catch(e) {
+        actions = [];
+      }
+    }
+
+    typingEl.remove();
+    addToFeed(narrative, 'narrator');
+    messageHistory.push({ role: 'assistant', content: fullText });
+  saveState();
+
+    if (actions.length > 0) renderActions(actions);
+
+  } catch (err) {
+    typingEl.remove();
+    addToFeed('Something went wrong. Try again.', 'narrator');
+    console.error(err);
+  }
+
+  isWaiting = false;
+  document.getElementById('send-btn').disabled = false;
+}
+
+// ═══════════════════════════════════════════
+// UI HELPERS
+// ═══════════════════════════════════════════
+function addToFeed(text, type) {
+  const feed = document.getElementById('story-feed');
+  const el = document.createElement('div');
+  el.className = `story-entry ${type}-text`;
+
+  if (type === 'narrator') {
+    // Typewriter effect
+    el.textContent = '';
+    feed.appendChild(el);
+    let i = 0;
+    const timer = setInterval(() => {
+      el.textContent += text[i];
+      i++;
+      feed.scrollTop = feed.scrollHeight;
+      if (i >= text.length) clearInterval(timer);
+    }, 18);
+  } else {
+    el.textContent = type === 'player' ? `> ${text}` : text;
+    feed.appendChild(el);
+  }
+
+  feed.scrollTop = feed.scrollHeight;
+  return el;
+}
+
+function renderActions(actions) {
+  const container = document.getElementById('action-buttons');
+  container.innerHTML = '';
+  actions.forEach(action => {
+    const btn = document.createElement('button');
+    btn.className = 'action-btn';
+    btn.textContent = action;
+    btn.onclick = () => sendAction(action);
+    container.appendChild(btn);
+  });
+}
+
+// ═══════════════════════════════════════════
+// VOICE INPUT
+// ═══════════════════════════════════════════
+function setupVoice() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    document.getElementById('voice-btn').style.display = 'none';
+    return;
+  }
+
+  recognition = new SpeechRecognition();
+  recognition.continuous = false;
+  recognition.interimResults = false;
+  recognition.lang = 'en-US';
+
+  recognition.onresult = (e) => {
+    const transcript = e.results[0][0].transcript;
+    document.getElementById('player-input').value = transcript;
+    stopVoice();
+    sendAction(transcript);
+  };
+
+  recognition.onend = () => stopVoice();
+  recognition.onerror = () => stopVoice();
+}
+
+function toggleVoice() {
+  if (isListening) {
+    stopVoice();
+  } else {
+    startVoice();
+  }
+}
+
+function startVoice() {
+  if (!recognition) return;
+  recognition.start();
+  isListening = true;
+  document.getElementById('voice-btn').classList.add('active');
+  document.getElementById('voice-btn').textContent = '⏹';
+}
+
+function stopVoice() {
+  if (recognition && isListening) recognition.stop();
+  isListening = false;
+  const btn = document.getElementById('voice-btn');
+  if (btn) {
+    btn.classList.remove('active');
+    btn.textContent = '🎤';
+  }
+}
+
+// ═══════════════════════════════════════════
+// EVENT LISTENERS
+// ═══════════════════════════════════════════
+document.getElementById('player-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendAction();
+  }
+});
+
+document.getElementById('voice-btn').addEventListener('click', toggleVoice);
+
+// Init
+setupVoice();
+
+// Resume saved game if exists
+const saved = loadState();
+if (saved) {
+  const resumeBar = document.createElement('div');
+  resumeBar.style.cssText = `
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: #1a1a1a; border-top: 1px solid #e8c84a44;
+    padding: 12px 20px; display: flex; align-items: center;
+    justify-content: space-between; z-index: 200;
+    font-family: Georgia, serif;
+  `;
+  resumeBar.innerHTML = `
+    <span style="color:#888; font-size:0.85rem;">
+      Resume <strong style="color:#e8c84a">${WORLDS[Object.keys(WORLDS).find(k => WORLDS[k] === currentWorld)].name}</strong>?
+    </span>
+    <div style="display:flex; gap:8px;">
+      <button onclick="resumeGame()" style="
+        background:#e8c84a; border:none; color:#0a0a0a;
+        padding:6px 16px; border-radius:4px; cursor:pointer;
+        font-family:Georgia,serif; font-size:0.85rem; font-weight:bold;">
+        Resume
+      </button>
+      <button onclick="dismissResume()" style="
+        background:none; border:1px solid #333; color:#888;
+        padding:6px 16px; border-radius:4px; cursor:pointer;
+        font-family:Georgia,serif; font-size:0.85rem;">
+        New Game
+      </button>
+    </div>
+  `;
+  document.body.appendChild(resumeBar);
+  window._resumeBar = resumeBar;
+}
+
+function resumeGame() {
+  if (window._resumeBar) window._resumeBar.remove();
+  document.getElementById('title-screen').style.display = 'none';
+  document.getElementById('game-screen').style.display = 'flex';
+  document.getElementById('world-title').textContent = currentWorld.title;
+
+  // Replay history into the feed
+  const feed = document.getElementById('story-feed');
+  feed.innerHTML = '';
+  for (const msg of messageHistory) {
+    if (msg.role === 'user') {
+      addToFeed(msg.content, 'player');
+    } else {
+      const narrative = msg.content.replace(/ACTIONS:\[.+\]/, '').trim();
+      addToFeed(narrative, 'narrator');
+    }
+  }
+
+  // Restore last action buttons
+  const lastAssistant = [...messageHistory].reverse().find(m => m.role === 'assistant');
+  if (lastAssistant) {
+    const actionMatch = lastAssistant.content.match(/ACTIONS:\[(.+)\]/);
+    if (actionMatch) {
+      try {
+        const actions = JSON.parse('[' + actionMatch[1] + ']');
+        renderActions(actions);
+      } catch(e) {}
+    }
+  }
+
+  const img = document.getElementById('scene-image');
+  img.src = currentWorld.image;
+  img.onerror = () => img.style.display = 'none';
+  feed.scrollTop = feed.scrollHeight;
+}
+
+function dismissResume() {
+  if (window._resumeBar) window._resumeBar.remove();
+  clearState();
+}
+</script>
+</body>
+</html>
