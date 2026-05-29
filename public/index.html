@@ -17,7 +17,6 @@
     overflow: hidden;
   }
 
-  /* TITLE SCREEN */
   #title-screen {
     position: fixed;
     inset: 0;
@@ -72,7 +71,6 @@
   .world-card .world-name { font-size: 1rem; font-weight: bold; color: #e8e0d0; margin-bottom: 4px; }
   .world-card .world-desc { font-size: 0.8rem; color: #888; font-style: italic; }
 
-  /* SCENE IMAGE */
   #scene-image {
     width: 100%;
     height: 220px;
@@ -82,14 +80,12 @@
     filter: brightness(0.75);
   }
 
-  /* GAME SCREEN */
   #game-screen {
     display: none;
     flex-direction: column;
     height: 100vh;
   }
 
-  /* HEADER */
   #game-header {
     display: flex;
     align-items: center;
@@ -119,7 +115,6 @@
 
   #back-btn:hover { border-color: #666; color: #aaa; }
 
-  /* STORY FEED */
   #story-feed {
     flex: 1;
     overflow-y: auto;
@@ -131,12 +126,7 @@
   }
 
   .story-entry { line-height: 1.7; }
-
-  .narrator-text {
-    color: #e8e0d0;
-    font-size: 0.95rem;
-  }
-
+  .narrator-text { color: #e8e0d0; font-size: 0.95rem; }
   .player-text {
     color: #e8c84a;
     font-style: italic;
@@ -145,13 +135,47 @@
     border-left: 2px solid #e8c84a44;
   }
 
-  .typing-indicator {
-    color: #555;
+  /* CHARACTER CONVERSATION MODE */
+  .character-text {
+    color: #a8d8a8;
+    font-size: 0.95rem;
+    padding: 10px 14px;
+    border-left: 3px solid #a8d8a844;
+    background: #0f1a0f;
+    border-radius: 0 6px 6px 0;
     font-style: italic;
-    font-size: 0.85rem;
   }
 
-  /* ACTION BUTTONS */
+  .convo-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #0f1a0f;
+    border: 1px solid #2a4a2a;
+    border-radius: 6px;
+    padding: 8px 14px;
+    font-size: 0.82rem;
+    color: #a8d8a8;
+  }
+
+  .convo-banner strong { color: #c8f0c8; }
+
+  .end-convo-btn {
+    background: none;
+    border: 1px solid #2a4a2a;
+    color: #a8d8a8;
+    padding: 3px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-family: Georgia, serif;
+  }
+
+  .end-convo-btn:hover { border-color: #a8d8a8; }
+
+  .typing-indicator { color: #555; font-style: italic; font-size: 0.85rem; }
+
+  /* ACTION BUTTONS AREA */
   #action-buttons {
     display: flex;
     flex-wrap: wrap;
@@ -160,6 +184,7 @@
     background: #111;
     border-top: 1px solid #1e1e1e;
     flex-shrink: 0;
+    min-height: 52px;
   }
 
   .action-btn {
@@ -183,6 +208,36 @@
     color: #e8c84a;
   }
 
+  /* SIT DOWN WITH BUTTONS */
+  .sit-btn {
+    background: #0f1a0f;
+    border: 1px solid #2a4a2a;
+    color: #a8d8a8;
+    padding: 8px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-family: Georgia, serif;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .sit-btn:hover {
+    background: #152015;
+    border-color: #a8d8a8;
+    color: #c8f0c8;
+  }
+
+  .sit-btn::before { content: "💬 "; }
+
+  /* DIVIDER between action and sit buttons */
+  .btn-divider {
+    width: 100%;
+    height: 1px;
+    background: #1e1e1e;
+    margin: 2px 0;
+  }
+
   /* INPUT AREA */
   #input-area {
     display: flex;
@@ -192,6 +247,12 @@
     border-top: 1px solid #1a1a1a;
     flex-shrink: 0;
     align-items: center;
+  }
+
+  /* Conversation mode input tint */
+  #input-area.convo-mode {
+    background: #0a0f0a;
+    border-top-color: #1a2a1a;
   }
 
   #player-input {
@@ -208,8 +269,14 @@
     height: 42px;
   }
 
-  #player-input:focus { border-color: #555; }
+  #player-input.convo-mode {
+    background: #0f1a0f;
+    border-color: #2a4a2a;
+    color: #e8f0e8;
+  }
 
+  #player-input:focus { border-color: #555; }
+  #player-input.convo-mode:focus { border-color: #4a7a4a; }
   #player-input::placeholder { color: #444; }
 
   .input-btn {
@@ -248,7 +315,13 @@
   #send-btn:hover { background: #f0d060; }
   #send-btn:disabled { background: #333; color: #666; cursor: not-allowed; }
 
-  /* SCROLLBAR */
+  #send-btn.convo-mode {
+    background: #4a7a4a;
+    color: #e8f0e8;
+  }
+
+  #send-btn.convo-mode:hover { background: #5a8a5a; }
+
   #story-feed::-webkit-scrollbar { width: 4px; }
   #story-feed::-webkit-scrollbar-track { background: transparent; }
   #story-feed::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
@@ -314,156 +387,146 @@ const WORLDS = {
     name: "Saddle Creek",
     title: "🤠 SADDLE CREEK — OLD WEST",
     image: "images/west.jpg",
+    characters: ["Frank Harlow", "Chauncey", "Cobb", "Ace Durbin", "Kittie", "Jasper Poe"],
+    characterProfiles: {
+      "Frank Harlow": "You are Frank Harlow, the Saloon King of Saddle Creek. You are always performing — warm, charming, cigar always present, you pour drinks before anyone asks. You are utterly ruthless underneath. Your smile never wavers — that's the tell. You speak with expansive warmth and subtle menace. You never directly threaten. You imply.",
+      "Chauncey": "You are Chauncey, Frank Harlow's enforcer. Crooked nose broken too many times to count, points slightly left. You carry no gun — don't need one. You are a man of very few words. Short sentences. Direct. You find most conversation unnecessary. You are not cruel for pleasure — just thorough.",
+      "Cobb": "You are Cobb, the founder of Saddle Creek. You are old, weathered, and carry enormous guilt for letting Frank Harlow into the town you built. You remember what Saddle Creek was. You speak plainly, with the cadence of a man who has lived a long time and seen too much. Occasional dark humor at your own expense.",
+      "Ace Durbin": "You are Ace Durbin, a traveling gambler. Smooth, southern, information is your real currency. You are hunting Jasper Poe who betrayed you to the law years ago. You are not the player's ally exactly — just someone whose enemies overlap. You have a story for everything. Half of them are true.",
+      "Kittie": "You are Kittie, the farmer's daughter. Your father died in the street. A stranger has his deed — your land. You are not a damsel. You are a frontier girl who has had the worst week of her life and is still standing. Direct, occasionally sardonic, genuinely grateful but not effusive about it.",
+      "Jasper Poe": "You are Jasper Poe, mid-level member of the Harlow Gang. You talk constantly. You always have an explanation. Betrayal is just business to you and you can explain it with complete sincerity. You are a coward with good survival instincts. You are never in a fair fight if you can help it."
+    },
     system: `You are the narrator of a gritty, dangerous Old West adventure set in Saddle Creek — a lawless frontier town corrupted by Frank Harlow and his gang who operate out of The Smoking Gun saloon.
 
-TONE: Gritty, tense, dangerous. Think Unforgiven and Pale Rider. Dark humor at the edges only — never slapstick. The world takes itself seriously even when the player doesn't.
+TONE: Gritty, tense, dangerous. Think Unforgiven and Pale Rider. Dark humor at the edges only — never slapstick.
 
-THE PLAYER: A nameless drifter. Dangerous, capable, no allegiances. They arrived, a farmer died in the street pressing a deed into their hand with his last breath — a deed to land Frank Harlow wants. The farmer's daughter is Kittie. The player made a silent promise in the dust.
+THE PLAYER: A nameless drifter. Dangerous, capable, no allegiances. A farmer died in the street pressing a deed into their hand. The farmer's daughter is Kittie. The player made a silent promise in the dust.
 
-KEY CHARACTERS:
-- Frank Harlow: Saloon King. Always performing, always smoking a cigar, pours your drink before you ask. Utterly ruthless underneath the warmth. The smile never wavers — that's the tell.
-- Chauncey: Frank's enforcer. Nose broken so many times it points left. Carries no gun. Doesn't need one. Never speaks unnecessarily.
-- Jasper Poe: Slimy mid-level gang member. Talks constantly, always has an explanation, betrayal is just business. Currently hiding under Frank's protection.
-- Cobb: Old timer, town founder, let Frank in and has regretted it every day since. Knows where all the bodies are buried.
-- Ace Durbin: Traveling gambler hunting Jasper Poe who betrayed him to the law. Not the player's ally exactly — just someone whose enemies overlap for now.
-- Kittie: The farmer's daughter. The deed is to her land. The reason the player stayed.
+KEY CHARACTERS: Frank Harlow (Saloon King, always performing, cigar, pours your drink, ruthless underneath), Chauncey (Frank's bruiser, crooked nose, no gun needed, few words), Jasper Poe (slimy talker, betrayed Ace, hides behind Frank), Cobb (town founder, let Frank in, carries that guilt), Ace Durbin (traveling gambler, hunting Jasper Poe), Kittie (farmer's daughter, the reason the player stayed).
 
 GAMEPLAY RULES:
-- Respond in vivid second-person present tense ("You push through the saloon doors...")
-- Keep responses to 3-5 sentences of pure narrative — atmospheric and specific
-- After EVERY response, suggest exactly 4 possible actions as a JSON array at the very end
-- Format the actions EXACTLY like this with no text after: ACTIONS:["action 1","action 2","action 3","action 4"]
-- Actions should feel genuine and varied — not all safe choices
-- The world reacts authentically to bold, rude, or unexpected player choices
-- Characters remember what the player has done
-- Bold action is rewarded — this is a world that respects capability`,
+- Respond in vivid second-person present tense
+- Keep responses to 3-5 sentences — atmospheric and specific
+- After EVERY response output exactly: ACTIONS:["action 1","action 2","action 3","action 4"]
+- Also output which characters are present: PRESENT:["Name1","Name2"]
+- Bold action is rewarded — this world respects capability
+- The world reacts authentically to bold, rude, or unexpected choices`,
   },
 
   noir: {
     name: "The Smoking Typewriter",
     title: "🕵️ THE SMOKING TYPEWRITER — NYC 1928",
     image: "images/noir.jpg",
-    system: `You are the narrator of a hard-boiled noir detective story set in New York City, 1928 — Prohibition, Tammany Hall, jazz, and corruption at every level.
+    characters: ["Tommy Byrne", "Nora Sullivan", "Thomas Galloway", "Sal Benedetto", "Calvin Sullivan"],
+    characterProfiles: {
+      "Tommy Byrne": "You are Tommy Byrne, Irish barman in Midtown Manhattan. You are genuinely happy to be in America and genuinely love it — but a significant portion of your heart still belongs to Ireland. You speak with a strong Irish brogue and use Irish colloquialisms constantly and naturally ('pure notions', 'gobdaw', 'away with the fairies', 'acting the maggot', 'that's fierce altogether'). You are Jack's sounding board and reality check. You quote Yeats when the mood takes you.",
+      "Nora Sullivan": "You are Nora Sullivan, Calvin's half-sister. You came to Jack Malone because you had nowhere else to go. You know more than you've told him — you're protecting someone and deciding how much truth you can afford. You are not manipulative — you're a woman in an impossible situation making calculated decisions. You are warm but careful. Direct when pushed.",
+      "Thomas Galloway": "You are Thomas Galloway, a Tammany Hall fixer. You dress like a banker. You never raise your voice. You have been solving powerful men's problems for twenty years. You are completely without hesitation underneath the controlled surface. You speak quietly, precisely, with long pauses. Everything you say means exactly what it says and sometimes more.",
+      "Sal Benedetto": "You are Sal Benedetto, who runs the longshoremen's union in practice if not on paper. Old country manners. Expensive suit. Hands that remember harder work. You are direct in the way of men who have never needed to be otherwise. You have been doing business with Tammany Hall for fifteen years and you are very tired of complications.",
+      "Calvin Sullivan": "You are Calvin Sullivan, jazz saxophone player, currently in hiding. You heard something you weren't supposed to hear at The Alabaster. You are frightened but trying not to show it. You speak with the cadence of a musician — observations come in unexpected rhythms. You trust Jack but aren't sure about the situation yet."
+    },
+    system: `You are the narrator of a hard-boiled noir detective story set in New York City, 1928.
 
-TONE: Atmospheric, moody, hard-boiled. Absurdist comedy is welcome — the narrator describes even ridiculous player choices in deadly serious prose. That gap is where the comedy lives.
+TONE: Atmospheric, moody, hard-boiled. Absurdist comedy welcome — describe ridiculous choices in deadly serious prose.
 
-THE PLAYER: Jack Malone, private detective. Office above a pawn shop in Midtown, two doors from Tommy Byrne's Irish pub. Fell into detective work helping a friend's trucking business navigate dock trouble. Knows the waterfront. Few beers, occasional jazz cigarette, genuine weakness for women that always complicates things. Skeptical of cops — not against them, just clear-eyed about corruption.
+THE PLAYER: Jack Malone, private detective, Midtown office above a pawn shop. Knows the docks. Few beers, occasional jazz cigarette, weakness for women. Skeptical of cops.
 
-THE CASE: Nora Sullivan walked into Jack's office looking for her missing half-brother Calvin — a jazz saxophone player who can play anything he hears perfectly from memory. Calvin was playing at The Alabaster (upscale Harlem jazz club) when he overheard a meeting between Thomas Galloway (Tammany fixer, dresses like a banker) and Sal Benedetto (runs the longshoremen's union). Now Calvin is missing. He's either hidden or silenced. Finding out which is the whole job.
+THE CASE: Find Calvin Sullivan — missing jazz saxophone player who heard a meeting between Thomas Galloway and Sal Benedetto at The Alabaster. He's either hidden or silenced.
 
-KEY CHARACTERS:
-- Nora Sullivan: Calvin's half-sister. Knows more than she's told Jack. Not manipulative — just protecting someone, deciding if she can trust him. Jack finds her completely compelling. This will complicate things.
-- Tommy Byrne: Barman two doors down. Happy to be in America, heart still in Ireland. Speaks with Irish brogue and hilarious colloquialisms ("pure notions", "gobdaw", "dragged through a ditch backwards") delivered completely straight.
-- Thomas Galloway: Tammany fixer. Dresses like a banker — Jack hates bankers. Never raises his voice. Twenty years solving powerful men's problems. Quietly without hesitation.
-- Sal Benedetto: Old country manners, expensive suit, runs the longshoremen's union in practice. Has been skimming every dock for fifteen years with Tammany's blessing.
-- Calvin Sullivan: Missing. A genuine jazz voice. Jack knows him personally — shared late nights and jazz cigarettes in Harlem clubs.
+KEY CHARACTERS: Nora Sullivan (Calvin's half-sister, client, knows more than she says), Tommy Byrne (Irish barman, brogue, colloquialisms), Thomas Galloway (Tammany fixer, dresses like a banker, never raises voice), Sal Benedetto (longshoremen's union, old country), Calvin Sullivan (missing musician, perfect recall).
 
 GAMEPLAY RULES:
-- Narrate in hard-boiled second person ("The rain hits the window like it has a personal grudge...")
-- Jack's inner voice is wry, observational, occasionally self-deprecating
-- Tommy's dialogue must include at least one Irish colloquialism per appearance
-- Keep responses to 3-5 sentences — atmospheric and specific
-- After EVERY response, suggest exactly 4 possible actions as a JSON array
-- Format EXACTLY: ACTIONS:["action 1","action 2","action 3","action 4"]
-- Absurd player choices get narrated with complete deadpan seriousness`,
+- Narrate in hard-boiled second person
+- Keep responses to 3-5 sentences
+- After EVERY response output exactly: ACTIONS:["action 1","action 2","action 3","action 4"]
+- Also output which characters are present: PRESENT:["Name1","Name2"]
+- Tommy must use at least one Irish colloquialism per appearance`,
   },
 
   medieval: {
     name: "Caernarfon",
     title: "🏰 CAERNARFON — MEDIEVAL ENGLAND 1314",
     image: "images/medieval.jpg",
-    system: `You are the narrator of a grounded, historically authentic medieval adventure set in Caernarfon Castle, Wales, 1314 — during the crumbling reign of Edward II.
+    characters: ["Sir Walter Breck", "Owain Glyndŵr", "Lady Maud Corbet"],
+    characterProfiles: {
+      "Sir Walter Breck": "You are Sir Walter Breck, Constable of Caernarfon Castle. You present as organized, fair, capable — a good lord to serve. Underneath you serve the Earl of Pembroke and are building a shadow administration across Wales. You cleared Sir Edmund's name from a serious accusation — a real debt you hold. You speak with measured authority. You never reveal more than necessary. You are genuinely fond of Sir Edmund which makes everything more complicated.",
+      "Owain Glyndŵr": "You are Owain Glyndŵr, Welsh fighter, ancestor of the future hero of Wales. You move between the castle and the Welsh hills. You don't perform. You don't explain yourself. You speak when you have something worth saying — short, direct sentences. Occasional Welsh word naturally placed. You find the English endlessly fascinating in a weary way. You have decided Sir Edmund might be worth something. You don't say this.",
+      "Lady Maud Corbet": "You are Lady Maud Corbet, traveling healer and Pembroke's enforcer. You are always three steps ahead. You read people instantly. You have no hesitation — a decision made years ago about what you're willing to do for a cause you believe in completely. Your son died at Bannockburn. You speak with calm precision. You are always slightly ahead of the conversation. You are never rattled."
+    },
+    system: `You are the narrator of a grounded medieval adventure set in Caernarfon Castle, Wales, 1314.
 
-TONE: Politically complex, consequence-heavy, morally ambiguous. No magic, no supernatural elements. Grounded realism throughout. Comedy emerges from bold player choices colliding with rigid medieval social structure — never from the narrator winking.
+TONE: Politically complex, consequence-heavy, morally ambiguous. No magic. Grounded realism.
 
-HISTORICAL CONTEXT: Edward II's reign is crumbling. The catastrophic defeat at Bannockburn in 1314 has destroyed English military prestige. The Lords Ordainer (powerful barons) have seized control of royal appointments. The Earl of Pembroke leads a genuine reform movement — his cause has merit even if his methods are illegal.
+THE PLAYER: Sir Edmund Cavell, knight of middling rank, in service to the castle constable. Owes Sir Walter Breck a profound debt — Sir Walter cleared his name.
 
-THE PLAYER: Sir Edmund Cavell, knight of middling rank, in service to the castle constable. High enough to stand in great halls, not so high every move is recorded. Owes Sir Walter Breck a profound debt — Sir Walter cleared his name from a serious accusation that would have ended everything.
-
-KEY CHARACTERS:
-- Sir Walter Breck: Castle constable. Organized, fair, not cruel. Secretly serves the Earl of Pembroke — building a shadow administration of loyal constables across Wales. The first crack: a messenger who arrives at odd hours, never logged.
-- Owain Glyndŵr: Welsh fighter. Ancestor of the future Welsh hero. Moves between castle and hills. Doesn't perform, doesn't explain himself. Speaks when he has something worth saying. Decided Sir Edmund was worth something after witnessing a small act of decency.
-- Lady Maud Corbet: Travels as a healer of genuine renown. Pembroke's enforcer. Lost her son at Bannockburn. Believes completely. Reads people instantly. No hesitation. Already three steps ahead. Sir Edmund's honest reaction: wariness and respect in equal measure.
+THE CONSPIRACY: Sir Walter secretly serves the Earl of Pembroke — building a shadow administration of loyal constables across Wales. Lady Maud Corbet travels as a healer enforcing the network. Owain Glyndŵr is a Welsh fighter who has decided Sir Edmund might be worth something.
 
 GAMEPLAY RULES:
-- Narrate in grounded, specific second person — the physical world is real and present
-- Characters address Sir Edmund formally — "Sir Edmund" — unless relationship warrants otherwise
-- Owain speaks plainly, no flowery language, occasional Welsh word
-- Lady Maud is always slightly ahead of the conversation
+- Narrate in grounded second person — physical world is real and present
 - Keep responses to 3-5 sentences
-- After EVERY response, suggest exactly 4 possible actions as a JSON array
-- Format EXACTLY: ACTIONS:["action 1","action 2","action 3","action 4"]
-- Medieval social hierarchy matters — actions that violate it have real consequences`,
+- After EVERY response output exactly: ACTIONS:["action 1","action 2","action 3","action 4"]
+- Also output which characters are present: PRESENT:["Name1","Name2"]
+- Medieval social hierarchy matters — violations have consequences`,
   },
 
   rome: {
     name: "Roma Aeterna",
     title: "🏛️ ROMA AETERNA — ROME 44 BC",
     image: "images/rome.jpg",
-    system: `You are the narrator of a tense historical thriller set in Rome, 44 BC. The Ides of March is approaching. Caesar will be assassinated on March 15th unless the player intervenes.
+    characters: ["Julius Caesar", "Mark Antony", "Brutus", "Cassius", "Calpurnia", "Decimus Brutus"],
+    characterProfiles: {
+      "Julius Caesar": "You are Julius Caesar, Dictator Perpetuo of Rome. Brilliant, proud, fatalistic. You are aware that people want you dead and consider fear beneath you. You treated a physician named Marcus Varro for a private medical matter and trust him with your silence. You speak with the authority of a man who has never doubted his own judgment — but there is something beneath it, a weariness, a man who has outgrown every system he's operated in and hasn't found what comes next.",
+      "Mark Antony": "You are Mark Antony, Caesar's closest ally. Raw, direct, deeply loyal. You have been lied to by educated men your entire career and can smell a senator's agenda from across the Forum. You don't trust easily. You trust action over words. You speak bluntly, with force, occasionally with surprising intelligence that catches people off guard. You are suspicious of Marcus Varro but something about him hasn't triggered your usual alarms yet.",
+      "Brutus": "You are Marcus Junius Brutus. You are a man who has convinced himself that what he is planning is honorable — the only honorable course. You are descended from the man who expelled Rome's last king. You are genuinely conflicted, genuinely principled, and genuinely wrong. You speak with the careful precision of a man who has rehearsed his justifications many times. There is grief underneath everything.",
+      "Cassius": "You are Gaius Cassius Longinus. You are the engine of the conspiracy — less conflicted than Brutus, driven by genuine grievance and ambition. You were passed over for honors Caesar gave to lesser men. You speak with controlled intensity. You are suspicious of everyone and trust no one completely. You are the most dangerous person in any room you occupy.",
+      "Calpurnia": "You are Calpurnia, Caesar's wife. You are afraid — a fear you cannot fully articulate, that comes in dreams. You are intelligent and politically aware despite being kept from power. You speak carefully, in private, with a warmth you rarely show publicly. You want someone to tell you your fears are real. You want someone to help.",
+      "Decimus Brutus": "You are Decimus Brutus, one of Caesar's closest friends and trusted generals — and one of the conspirators. You wear your friendship with Caesar as a mask so practiced it has almost become real. You speak with easy warmth, the manner of a man Caesar trusts completely. Underneath you are watching every conversation for threats to the plan."
+    },
+    system: `You are the narrator of a tense historical thriller set in Rome, 44 BC. The Ides of March approaches.
 
-TONE: Tense, conspiratorial, paranoid. The dramatic irony is the engine — the player knows what's coming, the characters don't. Every scene carries that weight. Authentic Roman atmosphere — the Forum, household visits, Senate politics, street life.
+TONE: Tense, conspiratorial, paranoid. The player knows what's coming — the characters don't. That irony drives everything.
 
-THE PLAYER: Marcus Varro, physician. Treated Caesar's epilepsy in complete secrecy — a private debt from the most powerful man in Rome. Carries knowledge no Roman can share: he knows the aftermath. The civil wars, Octavian, the destruction of the Republic these conspirators claim to be defending. His motivation: a physician's hatred of preventable mass suffering — he has held civil war's casualties in his hands. Not a warrior, but capable with a blade from years of field medicine.
+THE PLAYER: Marcus Varro, physician. Treated Caesar's epilepsy in secret. Knows the aftermath — civil wars, the destruction of the Republic. Motivated by a physician's hatred of preventable mass suffering. Capable with a blade.
 
-THE KEY CHALLENGE: Marcus cannot say "I know the future." He must work within what 44 BC Rome can understand. He is the only man who can see the whole board and has almost no ability to use that knowledge directly.
+THE MISSION: Get Mark Antony into the Senate on the Ides of March — or keep Caesar out of it.
 
-KEY CHARACTERS:
-- Julius Caesar: Brilliant, proud, fatalistic. May know people want him dead and consider fear beneath him. Trusts Marcus with his medical secret — that trust is the key to access.
-- Mark Antony: Caesar's closest ally. Raw, suspicious, fiercely loyal. Has been lied to by educated men his whole career. Getting his trust means earning it through honesty and action — not words. The mission shape: get Antony into that room on the Ides.
-- Brutus: Genuine Republican idealist. Conflicted, principled, wrong. The most interesting relationship — almost possible to reach.
-- Cassius: Driven by grievance and ambition. The engine of the conspiracy. Harder and more dangerous than Brutus.
-- Decimus Brutus: Caesar's trusted friend. Also a conspirator. The wolf inside the door.
-- Calpurnia: Caesar's wife. Already afraid. Needs confirmation not convincing.
+KEY CHARACTERS: Caesar (brilliant, proud, trusts Marcus), Mark Antony (raw, loyal, trust must be earned), Brutus (conflicted idealist, almost reachable), Cassius (driven, dangerous), Calpurnia (afraid, needs confirmation), Decimus Brutus (wolf inside the door).
 
 GAMEPLAY RULES:
-- Narrate in vivid present tense — Rome is alive, loud, specific
-- Latin phrases used sparingly and authentically (ave, dominus, the Forum, the Senate)
-- Keep responses to 3-5 sentences — atmosphere and tension
-- After EVERY response, suggest exactly 4 possible actions as a JSON array
-- Format EXACTLY: ACTIONS:["action 1","action 2","action 3","action 4"]
-- Historical authenticity matters — Roman social customs, the client system, household culture
-- The countdown to the Ides should feel present in every scene`,
+- Narrate in vivid present tense — Rome is alive and specific
+- Keep responses to 3-5 sentences
+- After EVERY response output exactly: ACTIONS:["action 1","action 2","action 3","action 4"]
+- Also output which characters are present: PRESENT:["Name1","Name2"]
+- The countdown to the Ides should feel present always`,
   },
 
   roadtrip: {
     name: "The Bomb Pop",
     title: "🚐 THE BOMB POP — 1985 ROAD TRIP",
     image: "images/roadtrip.jpg",
-    system: `You are the narrator of a pure comedy road trip adventure set in 1985. Think Dumb and Dumber meets Tommy Boy meets National Lampoon's Vacation.
+    characters: ["Donnie"],
+    characterProfiles: {
+      "Donnie": "You are Donnie, college roommate and co-pilot of The Bomb Pop on a road trip from Maryland to Orlando for a friend's wedding. You get distracted by literally anything shiny, interesting, or edible. You make friends with completely the wrong people instantly. You have complete unshakeable confidence in your own instincts which are consistently, objectively terrible. You never second-guess yourself. After any disaster: 'I still think that went pretty well until the very end.' You love The Doors with genuine passion — Jim Morrison is your personal philosopher and you will quote him at inappropriate moments with total sincerity. You speak with enthusiastic confidence about everything. You are secretly soulful. The music proves it even when nothing else does."
+    },
+    system: `You are the narrator of a pure comedy road trip adventure set in 1985. Maryland to Orlando. Friend's wedding. Missed the flight.
 
-TONE: Pure comedy chaos. Low stakes that feel high. The buddy dynamic IS the story. Hilarity is mandatory. The 1985 setting creates obstacles organically — no GPS, no cell phones, paper maps, motels with broken TVs, diners with suspicious pie.
+TONE: Pure comedy chaos. Low stakes that feel high. Donnie is always present and always a factor.
 
-THE SETUP: You and your college roommate Donnie are driving from Maryland to Orlando for your mutual friend's wedding. You missed your flight. You are driving Donnie's cousin's decommissioned ice cream van — The Bomb Pop — which still has half-removed Bomb Pop decals on the side. One cassette tape: The Doors Greatest Hits. Donnie is in the wedding party and must arrive no matter what. The rehearsal dinner is already being missed. The groom is calling every payphone on I-95 in increasing desperation.
+THE VEHICLE: The Bomb Pop — decommissioned ice cream van, half-removed decals, one cassette: The Doors Greatest Hits.
 
-DONNIE — FULL CHARACTER PROFILE (critical):
-- Gets distracted by literally anything shiny, interesting, or edible
-- Makes friends with completely the wrong people instantly — and invites them along
-- Thinks his instincts are solid. They are consistently, objectively terrible.
-- Complete unshakeable confidence. Never second-guesses. Always has an explanation for the disaster.
-- Classic post-disaster Donnie: "I still think that went pretty well until the very end."
-- Loves The Doors with genuine passion — Jim Morrison is his personal philosopher
-- Will recite Morrison poetry at completely inappropriate moments with total sincerity
-- College roommates — chosen each other freshman year, survived four years, you've seen each other at your worst
-- Secretly soulful. The music proves it even when nothing else does.
+DONNIE: Gets distracted by anything shiny/interesting/edible. Makes friends with wrong people instantly. Complete confidence in terrible instincts. Loves The Doors — Jim Morrison is his philosopher. College roommates — you chose each other freshman year.
 
-THE BOMB POP:
-- Decommissioned ice cream van, half-removed Bomb Pop decals still visible
-- Donnie named it with complete pride before anyone could object
-- At least once during the trip a kid will run toward it with money
-- The Doors Greatest Hits is the only cassette. It will be played on repeat.
+THE CLOCK: Rehearsal dinner already missed. Wedding non-negotiable. Groom calling every payphone on I-95.
 
-WAYPOINTS: Somewhere in North Carolina → Savannah Georgia → Florida Panhandle → Orlando
+WAYPOINTS: North Carolina → Savannah Georgia → Florida Panhandle → Orlando.
 
 GAMEPLAY RULES:
-- Narrate in second person — "You" is the straight man, Donnie is always present and always a factor
-- Donnie should speak frequently with complete confidence in whatever terrible idea he has
-- The groom's increasingly desperate payphone calls should punctuate the journey
+- Narrate in second person — Donnie always present
+- Donnie speaks frequently with complete confidence
 - Keep responses to 3-5 sentences plus Donnie dialogue
-- After EVERY response, suggest exactly 4 possible actions as a JSON array
-- Format EXACTLY: ACTIONS:["action 1","action 2","action 3","action 4"]
-- Bold, rude, or absurd player choices are enthusiastically encouraged
-- Donnie will support every bad idea the player has and make it worse`,
+- After EVERY response output exactly: ACTIONS:["action 1","action 2","action 3","action 4"]
+- Also output which characters are present: PRESENT:["Donnie"]
+- Bold and absurd choices enthusiastically encouraged`,
   }
 };
 
@@ -475,11 +538,15 @@ let messageHistory = [];
 let isWaiting = false;
 let recognition = null;
 let isListening = false;
+let conversationMode = false;
+let conversationCharacter = null;
+let conversationHistory = [];
 
 function saveState() {
   if (!currentWorld) return;
+  const key = Object.keys(WORLDS).find(k => WORLDS[k] === currentWorld);
   localStorage.setItem('ag_world', JSON.stringify({
-    key: Object.keys(WORLDS).find(k => WORLDS[k] === currentWorld),
+    key,
     history: messageHistory
   }));
 }
@@ -491,9 +558,7 @@ function loadState() {
     currentWorld = WORLDS[saved.key];
     messageHistory = saved.history;
     return saved;
-  } catch(e) {
-    return false;
-  }
+  } catch(e) { return false; }
 }
 
 function clearState() {
@@ -506,25 +571,29 @@ function clearState() {
 async function startWorld(worldKey) {
   currentWorld = WORLDS[worldKey];
   messageHistory = [];
+  conversationMode = false;
+  conversationCharacter = null;
+  conversationHistory = [];
 
   document.getElementById('title-screen').style.display = 'none';
   document.getElementById('game-screen').style.display = 'flex';
   document.getElementById('world-title').textContent = currentWorld.title;
   document.getElementById('story-feed').innerHTML = '';
   document.getElementById('action-buttons').innerHTML = '';
+  exitConversationUI();
 
-  // Set scene image
   const img = document.getElementById('scene-image');
   img.src = currentWorld.image;
+  img.style.display = 'block';
   img.onerror = () => img.style.display = 'none';
 
-  // Opening turn
   await sendToAI("Begin the adventure. Set the scene vividly and immediately. Drop me right into the action.");
 }
 
 function goBack() {
   document.getElementById('game-screen').style.display = 'none';
   document.getElementById('title-screen').style.display = 'flex';
+  exitConversationUI();
   stopVoice();
   clearState();
 }
@@ -537,23 +606,25 @@ async function sendAction(actionText) {
   const input = document.getElementById('player-input');
   const text = actionText || input.value.trim();
   if (!text) return;
-
   input.value = '';
-  document.getElementById('action-buttons').innerHTML = '';
 
-  addToFeed(text, 'player');
-  await sendToAI(text);
+  if (conversationMode) {
+    await sendConversation(text);
+  } else {
+    document.getElementById('action-buttons').innerHTML = '';
+    addToFeed(text, 'player');
+    await sendToAI(text);
+  }
 }
 
 // ═══════════════════════════════════════════
-// AI COMMUNICATION
+// MAIN NARRATIVE AI
 // ═══════════════════════════════════════════
 async function sendToAI(playerAction) {
   isWaiting = true;
   document.getElementById('send-btn').disabled = true;
 
   messageHistory.push({ role: 'user', content: playerAction });
-
   const typingEl = addToFeed('...', 'typing');
 
   try {
@@ -569,27 +640,29 @@ async function sendToAI(playerAction) {
     const data = await response.json();
     const fullText = data.content[0].text;
 
-    // Split narrative from actions
-    const actionMatch = fullText.match(/ACTIONS:\[(.+)\]/);
-    let narrative = fullText.replace(/ACTIONS:\[.+\]/, '').trim();
+    // Parse actions
+    const actionMatch = fullText.match(/ACTIONS:\[(.+?)\]/);
+    let narrative = fullText.replace(/ACTIONS:\[.+?\]/, '').replace(/PRESENT:\[.+?\]/, '').trim();
     let actions = [];
-
     if (actionMatch) {
-      try {
-        actions = JSON.parse('[' + actionMatch[1] + ']');
-      } catch(e) {
-        actions = [];
-      }
+      try { actions = JSON.parse('[' + actionMatch[1] + ']'); } catch(e) {}
+    }
+
+    // Parse present characters
+    const presentMatch = fullText.match(/PRESENT:\[(.+?)\]/);
+    let presentChars = [];
+    if (presentMatch) {
+      try { presentChars = JSON.parse('[' + presentMatch[1] + ']'); } catch(e) {}
     }
 
     typingEl.remove();
     addToFeed(narrative, 'narrator');
     messageHistory.push({ role: 'assistant', content: fullText });
-  saveState();
+    saveState();
 
-    if (actions.length > 0) renderActions(actions);
+    renderButtons(actions, presentChars);
 
-  } catch (err) {
+  } catch(err) {
     typingEl.remove();
     addToFeed('Something went wrong. Try again.', 'narrator');
     console.error(err);
@@ -600,36 +673,186 @@ async function sendToAI(playerAction) {
 }
 
 // ═══════════════════════════════════════════
-// UI HELPERS
+// CHARACTER CONVERSATION MODE
 // ═══════════════════════════════════════════
-function addToFeed(text, type) {
+function sitDownWith(characterName) {
+  conversationMode = true;
+  conversationCharacter = characterName;
+  conversationHistory = [];
+
+  // Visual shift
+  const inputArea = document.getElementById('input-area');
+  const input = document.getElementById('player-input');
+  const sendBtn = document.getElementById('send-btn');
+  inputArea.classList.add('convo-mode');
+  input.classList.add('convo-mode');
+  sendBtn.classList.add('convo-mode');
+  input.placeholder = `Say something to ${characterName}...`;
+
+  // Add conversation banner to feed
   const feed = document.getElementById('story-feed');
-  const el = document.createElement('div');
-  el.className = `story-entry ${type}-text`;
-
-  if (type === 'narrator') {
-    // Typewriter effect
-    el.textContent = '';
-    feed.appendChild(el);
-    let i = 0;
-    const timer = setInterval(() => {
-      el.textContent += text[i];
-      i++;
-      feed.scrollTop = feed.scrollHeight;
-      if (i >= text.length) clearInterval(timer);
-    }, 18);
-  } else {
-    el.textContent = type === 'player' ? `> ${text}` : text;
-    feed.appendChild(el);
-  }
-
+  const banner = document.createElement('div');
+  banner.className = 'convo-banner';
+  banner.id = 'convo-banner';
+  banner.innerHTML = `
+    <span>💬 Conversation with <strong>${characterName}</strong> — story paused</span>
+    <button class="end-convo-btn" onclick="endConversation()">Back to story →</button>
+  `;
+  feed.appendChild(banner);
   feed.scrollTop = feed.scrollHeight;
-  return el;
+
+  // Clear action buttons
+  document.getElementById('action-buttons').innerHTML = '';
+
+  // Opening line from character
+  sendCharacterOpener(characterName);
 }
 
-function renderActions(actions) {
+async function sendCharacterOpener(characterName) {
+  isWaiting = true;
+  document.getElementById('send-btn').disabled = true;
+
+  const profile = currentWorld.characterProfiles[characterName];
+  const context = messageHistory.slice(-4).map(m => {
+    if (m.role === 'assistant') {
+      return m.content.replace(/ACTIONS:\[.+?\]/, '').replace(/PRESENT:\[.+?\]/, '').trim();
+    }
+    return m.content;
+  }).join('\n');
+
+  const systemPrompt = `${profile}
+
+The player wants to sit down and have a direct conversation with you. The main story is paused. Stay completely in character. React naturally to what the player says. Be yourself fully — your personality, your secrets (reveal carefully as appropriate), your worldview. The recent story context is: ${context}
+
+Respond only as ${characterName} speaking directly. No narrator voice. No action buttons. Pure character dialogue. Keep responses conversational — 2-4 sentences unless the moment calls for more.`;
+
+  const typingEl = addToFeed('...', 'typing');
+
+  try {
+    const response = await fetch('/api/turn', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        systemPrompt,
+        messages: [{ role: 'user', content: `The player has sat down with you. Open the conversation naturally — say something that fits who you are and the current moment.` }]
+      })
+    });
+
+    const data = await response.json();
+    const text = data.content[0].text;
+    conversationHistory.push({ role: 'assistant', content: text });
+    typingEl.remove();
+    addToFeed(text, 'character');
+
+  } catch(err) {
+    typingEl.remove();
+    addToFeed(`${characterName} looks at you.`, 'character');
+  }
+
+  isWaiting = false;
+  document.getElementById('send-btn').disabled = false;
+}
+
+async function sendConversation(playerText) {
+  isWaiting = true;
+  document.getElementById('send-btn').disabled = true;
+
+  addToFeed(playerText, 'player');
+  conversationHistory.push({ role: 'user', content: playerText });
+
+  // Check if player wants to end conversation
+  const endPhrases = ['back to the story', 'back to story', 'end conversation', 'goodbye', 'farewell', 'i should go', 'let\'s go', 'enough talk'];
+  if (endPhrases.some(p => playerText.toLowerCase().includes(p))) {
+    endConversation();
+    return;
+  }
+
+  const profile = currentWorld.characterProfiles[conversationCharacter];
+  const context = messageHistory.slice(-4).map(m => {
+    if (m.role === 'assistant') {
+      return m.content.replace(/ACTIONS:\[.+?\]/, '').replace(/PRESENT:\[.+?\]/, '').trim();
+    }
+    return m.content;
+  }).join('\n');
+
+  const systemPrompt = `${profile}
+
+You are in direct conversation with the player. Stay completely in character. The story context is: ${context}
+
+Respond only as ${conversationCharacter} speaking directly. No narrator voice. No action buttons. Pure dialogue. 2-4 sentences unless the moment calls for more.`;
+
+  const typingEl = addToFeed('...', 'typing');
+
+  try {
+    const response = await fetch('/api/turn', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        systemPrompt,
+        messages: conversationHistory
+      })
+    });
+
+    const data = await response.json();
+    const text = data.content[0].text;
+    conversationHistory.push({ role: 'assistant', content: text });
+    typingEl.remove();
+    addToFeed(text, 'character');
+
+  } catch(err) {
+    typingEl.remove();
+    addToFeed('...', 'character');
+  }
+
+  isWaiting = false;
+  document.getElementById('send-btn').disabled = false;
+}
+
+function endConversation() {
+  conversationMode = false;
+  conversationCharacter = null;
+  conversationHistory = [];
+  exitConversationUI();
+
+  // Return to story note
+  addToFeed('You return to the story...', 'narrator');
+
+  // Restore last action buttons
+  const lastAssistant = [...messageHistory].reverse().find(m => m.role === 'assistant');
+  if (lastAssistant) {
+    const actionMatch = lastAssistant.content.match(/ACTIONS:\[(.+?)\]/);
+    const presentMatch = lastAssistant.content.match(/PRESENT:\[(.+?)\]/);
+    let actions = [];
+    let present = [];
+    if (actionMatch) { try { actions = JSON.parse('[' + actionMatch[1] + ']'); } catch(e) {} }
+    if (presentMatch) { try { present = JSON.parse('[' + presentMatch[1] + ']'); } catch(e) {} }
+    renderButtons(actions, present);
+  }
+}
+
+function exitConversationUI() {
+  conversationMode = false;
+  const inputArea = document.getElementById('input-area');
+  const input = document.getElementById('player-input');
+  const sendBtn = document.getElementById('send-btn');
+  if (inputArea) inputArea.classList.remove('convo-mode');
+  if (input) {
+    input.classList.remove('convo-mode');
+    input.placeholder = 'What do you do...';
+  }
+  if (sendBtn) sendBtn.classList.remove('convo-mode');
+  const banner = document.getElementById('convo-banner');
+  if (banner) banner.remove();
+}
+
+// ═══════════════════════════════════════════
+// RENDER BUTTONS
+// ═══════════════════════════════════════════
+function renderButtons(actions, presentChars) {
   const container = document.getElementById('action-buttons');
   container.innerHTML = '';
+
+  // Action buttons
   actions.forEach(action => {
     const btn = document.createElement('button');
     btn.className = 'action-btn';
@@ -637,6 +860,53 @@ function renderActions(actions) {
     btn.onclick = () => sendAction(action);
     container.appendChild(btn);
   });
+
+  // Filter present characters to those with profiles
+  const sittable = (presentChars || []).filter(name =>
+    currentWorld.characterProfiles && currentWorld.characterProfiles[name]
+  );
+
+  if (sittable.length > 0) {
+    const divider = document.createElement('div');
+    divider.className = 'btn-divider';
+    container.appendChild(divider);
+
+    sittable.forEach(name => {
+      const btn = document.createElement('button');
+      btn.className = 'sit-btn';
+      btn.textContent = `Sit down with ${name}`;
+      btn.onclick = () => sitDownWith(name);
+      container.appendChild(btn);
+    });
+  }
+}
+
+// ═══════════════════════════════════════════
+// UI HELPERS
+// ═══════════════════════════════════════════
+function addToFeed(text, type) {
+  const feed = document.getElementById('story-feed');
+  const el = document.createElement('div');
+  el.className = `story-entry ${type}-text`;
+
+  if (type === 'narrator' || type === 'character') {
+    el.textContent = '';
+    feed.appendChild(el);
+    let i = 0;
+    const speed = type === 'character' ? 22 : 18;
+    const timer = setInterval(() => {
+      el.textContent += text[i];
+      i++;
+      feed.scrollTop = feed.scrollHeight;
+      if (i >= text.length) clearInterval(timer);
+    }, speed);
+  } else {
+    el.textContent = type === 'player' ? `> ${text}` : text;
+    feed.appendChild(el);
+  }
+
+  feed.scrollTop = feed.scrollHeight;
+  return el;
 }
 
 // ═══════════════════════════════════════════
@@ -648,29 +918,22 @@ function setupVoice() {
     document.getElementById('voice-btn').style.display = 'none';
     return;
   }
-
   recognition = new SpeechRecognition();
   recognition.continuous = false;
   recognition.interimResults = false;
   recognition.lang = 'en-US';
-
   recognition.onresult = (e) => {
     const transcript = e.results[0][0].transcript;
     document.getElementById('player-input').value = transcript;
     stopVoice();
     sendAction(transcript);
   };
-
   recognition.onend = () => stopVoice();
   recognition.onerror = () => stopVoice();
 }
 
 function toggleVoice() {
-  if (isListening) {
-    stopVoice();
-  } else {
-    startVoice();
-  }
+  isListening ? stopVoice() : startVoice();
 }
 
 function startVoice() {
@@ -685,10 +948,7 @@ function stopVoice() {
   if (recognition && isListening) recognition.stop();
   isListening = false;
   const btn = document.getElementById('voice-btn');
-  if (btn) {
-    btn.classList.remove('active');
-    btn.textContent = '🎤';
-  }
+  if (btn) { btn.classList.remove('active'); btn.textContent = '🎤'; }
 }
 
 // ═══════════════════════════════════════════
@@ -703,10 +963,11 @@ document.getElementById('player-input').addEventListener('keydown', (e) => {
 
 document.getElementById('voice-btn').addEventListener('click', toggleVoice);
 
-// Init
+// ═══════════════════════════════════════════
+// INIT + RESUME
+// ═══════════════════════════════════════════
 setupVoice();
 
-// Resume saved game if exists
 const saved = loadState();
 if (saved) {
   const resumeBar = document.createElement('div');
@@ -717,9 +978,10 @@ if (saved) {
     justify-content: space-between; z-index: 200;
     font-family: Georgia, serif;
   `;
+  const worldKey = Object.keys(WORLDS).find(k => WORLDS[k] === currentWorld);
   resumeBar.innerHTML = `
     <span style="color:#888; font-size:0.85rem;">
-      Resume <strong style="color:#e8c84a">${WORLDS[Object.keys(WORLDS).find(k => WORLDS[k] === currentWorld)].name}</strong>?
+      Resume <strong style="color:#e8c84a">${currentWorld.name}</strong>?
     </span>
     <div style="display:flex; gap:8px;">
       <button onclick="resumeGame()" style="
@@ -746,28 +1008,30 @@ function resumeGame() {
   document.getElementById('game-screen').style.display = 'flex';
   document.getElementById('world-title').textContent = currentWorld.title;
 
-  // Replay history into the feed
   const feed = document.getElementById('story-feed');
   feed.innerHTML = '';
+
   for (const msg of messageHistory) {
     if (msg.role === 'user') {
       addToFeed(msg.content, 'player');
     } else {
-      const narrative = msg.content.replace(/ACTIONS:\[.+\]/, '').trim();
+      const narrative = msg.content
+        .replace(/ACTIONS:\[.+?\]/, '')
+        .replace(/PRESENT:\[.+?\]/, '')
+        .trim();
       addToFeed(narrative, 'narrator');
     }
   }
 
-  // Restore last action buttons
   const lastAssistant = [...messageHistory].reverse().find(m => m.role === 'assistant');
   if (lastAssistant) {
-    const actionMatch = lastAssistant.content.match(/ACTIONS:\[(.+)\]/);
-    if (actionMatch) {
-      try {
-        const actions = JSON.parse('[' + actionMatch[1] + ']');
-        renderActions(actions);
-      } catch(e) {}
-    }
+    const actionMatch = lastAssistant.content.match(/ACTIONS:\[(.+?)\]/);
+    const presentMatch = lastAssistant.content.match(/PRESENT:\[(.+?)\]/);
+    let actions = [];
+    let present = [];
+    if (actionMatch) { try { actions = JSON.parse('[' + actionMatch[1] + ']'); } catch(e) {} }
+    if (presentMatch) { try { present = JSON.parse('[' + presentMatch[1] + ']'); } catch(e) {} }
+    renderButtons(actions, present);
   }
 
   const img = document.getElementById('scene-image');
