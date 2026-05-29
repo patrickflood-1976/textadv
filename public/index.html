@@ -679,12 +679,7 @@ async function sendToAI(playerAction) {
       }
     }
 
-    // Parse present characters
-    const presentMatch = fullText.match(/PRESENT:\[(.+?)\]/);
-    let presentChars = [];
-    if (presentMatch) {
-      try { presentChars = JSON.parse('[' + presentMatch[1] + ']'); } catch(e) {}
-    }
+    
 
     typingEl.remove();
     addToFeed(narrative, 'narrator');
