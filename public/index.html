@@ -344,7 +344,17 @@
   #story-feed::-webkit-scrollbar { width: 4px; }
   #story-feed::-webkit-scrollbar-track { background: transparent; }
   #story-feed::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
-</style>
+.save-indicator {
+    font-size: 0.72rem;
+    color: #e8c84a;
+    margin-top: 6px;
+    min-height: 14px;
+    font-style: italic;
+  }
+
+  .world-card.has-save {
+    border-color: #e8c84a44;
+  }</style>
 </head>
 <body>
 
@@ -352,31 +362,36 @@
 <div id="title-screen">
   <h1>⚔ Adventure Game</h1>
   <p>Choose your world</p>
-  <div class="world-grid">
-    <div class="world-card" onclick="startWorld('west')">
+  <div class="world-grid" id="world-grid">
+    <div class="world-card" id="card-west" onclick="startWorld('west')">
       <div class="world-emoji">🤠</div>
       <div class="world-name">Saddle Creek</div>
       <div class="world-desc">American Old West</div>
+      <div class="save-indicator" id="save-west"></div>
     </div>
-    <div class="world-card" onclick="startWorld('noir')">
+    <div class="world-card" id="card-noir" onclick="startWorld('noir')">
       <div class="world-emoji">🕵️</div>
       <div class="world-name">The Smoking Typewriter</div>
       <div class="world-desc">New York City, 1928</div>
+      <div class="save-indicator" id="save-noir"></div>
     </div>
-    <div class="world-card" onclick="startWorld('medieval')">
+    <div class="world-card" id="card-medieval" onclick="startWorld('medieval')">
       <div class="world-emoji">🏰</div>
       <div class="world-name">Caernarfon</div>
       <div class="world-desc">Medieval England, 1314</div>
+      <div class="save-indicator" id="save-medieval"></div>
     </div>
-    <div class="world-card" onclick="startWorld('rome')">
+    <div class="world-card" id="card-rome" onclick="startWorld('rome')">
       <div class="world-emoji">🏛️</div>
       <div class="world-name">Roma Aeterna</div>
       <div class="world-desc">Rome, 44 BC</div>
+      <div class="save-indicator" id="save-rome"></div>
     </div>
-    <div class="world-card" onclick="startWorld('roadtrip')">
+    <div class="world-card" id="card-roadtrip" onclick="startWorld('roadtrip')">
       <div class="world-emoji">🚐</div>
       <div class="world-name">The Bomb Pop</div>
       <div class="world-desc">1985 Road Trip</div>
+      <div class="save-indicator" id="save-roadtrip"></div>
     </div>
   </div>
 </div>
@@ -564,30 +579,146 @@ let conversationHistory = [];
 function saveState() {
   if (!currentWorld) return;
   const key = Object.keys(WORLDS).find(k => WORLDS[k] === currentWorld);
-  localStorage.setItem('ag_world', JSON.stringify({
+  localStorage.setItem(`ag_save_${key}`, JSON.stringify({
     key,
     history: messageHistory
   }));
 }
 
-function loadState() {
+function loadState(worldKey) {
   try {
-    const saved = JSON.parse(localStorage.getItem('ag_world'));
-    if (!saved || !saved.key || !saved.history.length) return false;
-    currentWorld = WORLDS[saved.key];
-    messageHistory = saved.history;
+    const saved = JSON.parse(localStorage.getItem(`ag_save_${worldKey}`));
+    if (!saved || !saved.history || !saved.history.length) return false;
     return saved;
   } catch(e) { return false; }
 }
 
-function clearState() {
-  localStorage.removeItem('ag_world');
+function clearState(worldKey) {
+  if (worldKey) {
+    localStorage.removeItem(`ag_save_${worldKey}`);
+  } else {
+    Object.keys(WORLDS).forEach(k => localStorage.removeItem(`ag_save_${k}`));
+  }
+}
+
+function hasSave(worldKey) {
+  try {
+    const saved = JSON.parse(localStorage.getItem(`ag_save_${worldKey}`));
+    return !!(saved && saved.history && saved.history.length > 0);
+  } catch(e) { return false; }
 }
 
 // ═══════════════════════════════════════════
 // WORLD SELECTION
 // ═══════════════════════════════════════════
 async function startWorld(worldKey) {
+  const saved = loadState(worldKey);
+
+  if (saved) {
+    // Ask to resume or start fresh
+    currentWorld = WORLDS[worldKey];
+    messageHistory = saved.history;
+    showResumePrompt(worldKey);
+    return;
+  }
+
+  launchWorld(worldKey);
+}
+
+function showResumePrompt(worldKey) {
+  const world = WORLDS[worldKey];
+  document.getElementById('title-screen').style.display = 'none';
+  document.getElementById('game-screen').style.display = 'flex';
+  document.getElementById('world-title').textContent = world.title;
+  document.getElementById('story-feed').innerHTML = '';
+  document.getElementById('action-buttons').innerHTML = '';
+
+  const feed = document.getElementById('story-feed');
+  const prompt = document.createElement('div');
+  prompt.style.cssText = `
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 16px;
+    padding: 24px;
+  `;
+  prompt.innerHTML = `
+    <div style="color:#888; font-size:0.9rem; text-align:center; font-style:italic;">
+      You have a saved game in progress...
+    </div>
+    <div style="display:flex; gap:12px; flex-wrap:wrap; justify-content:center;">
+      <button onclick="resumeWorld('${worldKey}')" style="
+        background:#e8c84a; border:none; color:#0a0a0a;
+        padding:10px 24px; border-radius:6px; cursor:pointer;
+        font-family:Georgia,serif; font-size:0.95rem; font-weight:bold;">
+        Resume Game
+      </button>
+      <button onclick="newGame('${worldKey}')" style="
+        background:none; border:1px solid #444; color:#888;
+        padding:10px 24px; border-radius:6px; cursor:pointer;
+        font-family:Georgia,serif; font-size:0.95rem;">
+        New Game
+      </button>
+      <button onclick="goBack()" style="
+        background:none; border:1px solid #333; color:#666;
+        padding:10px 24px; border-radius:6px; cursor:pointer;
+        font-family:Georgia,serif; font-size:0.85rem;">
+        ← Back
+      </button>
+    </div>
+  `;
+  feed.appendChild(prompt);
+
+  const img = document.getElementById('scene-image');
+  img.src = currentWorld.image;
+  img.onerror = () => img.style.display = 'none';
+}
+
+function resumeWorld(worldKey) {
+  document.getElementById('story-feed').innerHTML = '';
+  const feed = document.getElementById('story-feed');
+
+  for (const msg of messageHistory) {
+    if (msg.role === 'user') {
+      addToFeed(msg.content, 'player');
+    } else {
+      const narrative = msg.content
+        .replace(/ACTIONS:\[.+?\]/s, '')
+        .replace(/PRESENT:\[.+?\]/s, '')
+        .trim();
+      addToFeed(narrative, 'narrator');
+    }
+  }
+
+  const lastAssistant = [...messageHistory].reverse().find(m => m.role === 'assistant');
+  if (lastAssistant) {
+    const actionsLineMatch = lastAssistant.content.match(/ACTIONS:\s*\[([^\]]+)\]/);
+    const presentLineMatch = lastAssistant.content.match(/PRESENT:\s*\[([^\]]+)\]/);
+    let actions = [];
+    let present = [];
+    if (actionsLineMatch) {
+      const items = actionsLineMatch[1].match(/"([^"]+)"/g);
+      if (items) actions = items.map(a => a.replace(/"/g, ''));
+    }
+    if (presentLineMatch) {
+      const items = presentLineMatch[1].match(/"([^"]+)"/g);
+      if (items) present = items.map(p => p.replace(/"/g, ''));
+    }
+    renderButtons(actions, present);
+  }
+
+  feed.scrollTop = feed.scrollHeight;
+}
+
+function newGame(worldKey) {
+  clearState(worldKey);
+  messageHistory = [];
+  launchWorld(worldKey);
+}
+
+async function launchWorld(worldKey) {
   currentWorld = WORLDS[worldKey];
   messageHistory = [];
   conversationMode = false;
@@ -610,11 +741,16 @@ async function startWorld(worldKey) {
 }
 
 function goBack() {
+  currentWorld = null;
+  messageHistory = [];
+  conversationMode = false;
+  conversationCharacter = null;
+  conversationHistory = [];
   document.getElementById('game-screen').style.display = 'none';
   document.getElementById('title-screen').style.display = 'flex';
   exitConversationUI();
   stopVoice();
-  clearState();
+  updateWorldCards();
 }
 
 // ═══════════════════════════════════════════
@@ -1019,86 +1155,40 @@ document.getElementById('player-input').addEventListener('keydown', (e) => {
 document.getElementById('voice-btn').addEventListener('click', toggleVoice);
 
 // ═══════════════════════════════════════════
-// INIT + RESUME
+// WORLD CARD INDICATORS
 // ═══════════════════════════════════════════
-setupVoice();
-
-const saved = loadState();
-if (saved) {
-  const resumeBar = document.createElement('div');
-  resumeBar.style.cssText = `
-    position: fixed; bottom: 0; left: 0; right: 0;
-    background: #1a1a1a; border-top: 1px solid #e8c84a44;
-    padding: 12px 20px; display: flex; align-items: center;
-    justify-content: space-between; z-index: 200;
-    font-family: Georgia, serif;
-  `;
-  const worldKey = Object.keys(WORLDS).find(k => WORLDS[k] === currentWorld);
-  resumeBar.innerHTML = `
-    <span style="color:#888; font-size:0.85rem;">
-      Resume <strong style="color:#e8c84a">${currentWorld.name}</strong>?
-    </span>
-    <div style="display:flex; gap:8px;">
-      <button onclick="resumeGame()" style="
-        background:#e8c84a; border:none; color:#0a0a0a;
-        padding:6px 16px; border-radius:4px; cursor:pointer;
-        font-family:Georgia,serif; font-size:0.85rem; font-weight:bold;">
-        Resume
-      </button>
-      <button onclick="dismissResume()" style="
-        background:none; border:1px solid #333; color:#888;
-        padding:6px 16px; border-radius:4px; cursor:pointer;
-        font-family:Georgia,serif; font-size:0.85rem;">
-        New Game
-      </button>
-    </div>
-  `;
-  document.body.appendChild(resumeBar);
-  window._resumeBar = resumeBar;
+function updateWorldCards() {
+  Object.keys(WORLDS).forEach(key => {
+    const indicator = document.getElementById(`save-${key}`);
+    const card = document.getElementById(`card-${key}`);
+    if (!indicator || !card) return;
+    if (hasSave(key)) {
+      indicator.textContent = '● In Progress';
+      card.classList.add('has-save');
+    } else {
+      indicator.textContent = '';
+      card.classList.remove('has-save');
+    }
+  });
 }
 
 function resumeGame() {
   if (window._resumeBar) window._resumeBar.remove();
-  document.getElementById('title-screen').style.display = 'none';
-  document.getElementById('game-screen').style.display = 'flex';
-  document.getElementById('world-title').textContent = currentWorld.title;
-
-  const feed = document.getElementById('story-feed');
-  feed.innerHTML = '';
-
-  for (const msg of messageHistory) {
-    if (msg.role === 'user') {
-      addToFeed(msg.content, 'player');
-    } else {
-      const narrative = msg.content
-        .replace(/ACTIONS:\[.+?\]/, '')
-        .replace(/PRESENT:\[.+?\]/, '')
-        .trim();
-      addToFeed(narrative, 'narrator');
-    }
-  }
-
-  const lastAssistant = [...messageHistory].reverse().find(m => m.role === 'assistant');
-  if (lastAssistant) {
-    const actionMatch = lastAssistant.content.match(/ACTIONS:\[(.+?)\]/);
-    const presentMatch = lastAssistant.content.match(/PRESENT:\[(.+?)\]/);
-    let actions = [];
-    let present = [];
-    if (actionMatch) { try { actions = JSON.parse('[' + actionMatch[1] + ']'); } catch(e) {} }
-    if (presentMatch) { try { present = JSON.parse('[' + presentMatch[1] + ']'); } catch(e) {} }
-    renderButtons(actions, present);
-  }
-
-  const img = document.getElementById('scene-image');
-  img.src = currentWorld.image;
-  img.onerror = () => img.style.display = 'none';
-  feed.scrollTop = feed.scrollHeight;
 }
 
 function dismissResume() {
   if (window._resumeBar) window._resumeBar.remove();
-  clearState();
 }
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+setupVoice();
+updateWorldCards();
+
+
+
+
 </script>
 </body>
 </html>
