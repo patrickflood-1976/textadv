@@ -180,27 +180,43 @@
   /* ACTION BUTTONS AREA */
   #action-buttons {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 8px;
-    padding: 10px 16px;
+    padding: 8px 16px;
     background: #111;
     border-top: 1px solid #1e1e1e;
     flex-shrink: 0;
-    min-height: 52px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    min-height: 0;
+    transition: all 0.3s ease;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  #action-buttons::-webkit-scrollbar {
+    display: none;
+  }
+
+  #action-buttons.hidden {
+    padding: 0;
+    border-top: none;
+    max-height: 0;
+    overflow: hidden;
   }
 
   .action-btn {
     background: #1a1a1a;
     border: 1px solid #333;
     color: #e8e0d0;
-    padding: 8px 14px;
+    padding: 7px 14px;
     border-radius: 20px;
     cursor: pointer;
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     font-family: Georgia, serif;
     transition: all 0.15s;
-    flex: 1;
-    min-width: 140px;
+    white-space: nowrap;
+    flex-shrink: 0;
     text-align: center;
   }
 
@@ -215,13 +231,14 @@
     background: #0f1a0f;
     border: 1px solid #2a4a2a;
     color: #a8d8a8;
-    padding: 8px 14px;
+    padding: 7px 14px;
     border-radius: 20px;
     cursor: pointer;
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     font-family: Georgia, serif;
     transition: all 0.15s;
     white-space: nowrap;
+    flex-shrink: 0;
   }
 
   .sit-btn:hover {
@@ -920,13 +937,23 @@ function addToFeed(text, type) {
   if (type === 'narrator' || type === 'character') {
     el.textContent = '';
     feed.appendChild(el);
+
+    // Hide buttons while typing
+    const actionButtons = document.getElementById('action-buttons');
+    actionButtons.classList.add('hidden');
+
     let i = 0;
     const speed = type === 'character' ? 22 : 18;
     const timer = setInterval(() => {
       el.textContent += text[i];
       i++;
       feed.scrollTop = feed.scrollHeight;
-      if (i >= text.length) clearInterval(timer);
+      if (i >= text.length) {
+        clearInterval(timer);
+        // Reveal buttons after typing done
+        actionButtons.classList.remove('hidden');
+        feed.scrollTop = feed.scrollHeight;
+      }
     }, speed);
   } else {
     el.textContent = type === 'player' ? `> ${text}` : text;
